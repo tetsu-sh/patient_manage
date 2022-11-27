@@ -82,3 +82,60 @@ impl DoctorInChargeRepository for DoctorInChargeRepositoryImpl<'_> {
         Ok(())
     }
 }
+
+pub struct UserRepositoryMockImpl {}
+
+#[async_trait]
+impl UserRepository for UserRepositoryMockImpl {
+    /// nothing is done.
+    async fn save(&self, user: &User) -> Result<(), MyError> {
+        Ok(())
+    }
+    /// return User::from("test_id", "test_code", "test_name", "test_password")
+    /// id is not correct then return Error
+    async fn fetch_one(&self, id: &String) -> Result<User, MyError> {
+        // let yaml_file = std::fs::read("/repository/fixtures/user.yaml");
+        // let yaml = serde_yaml::Deserializer::from_slice(yaml_file);
+
+        let user = get_data();
+        if id == &user.id {
+            return Ok(user);
+        } else {
+            return Err(MyError::BadRequest(json!({
+                "error": format!("no record of id={}.", id)
+            })));
+        }
+    }
+
+    /// return User::from("test_id", "test_code", "test_name", "test_password")
+    /// name is not correct then return Error
+    async fn find_by_name(&self, name: &String) -> Result<User, MyError> {
+        let user = get_data();
+        if name == &user.name {
+            return Ok(user);
+        } else {
+            return Err(MyError::BadRequest(json!({
+                "error": format!("no record of name={}.", name)
+            })));
+        }
+    }
+}
+
+fn get_data() -> User {
+    User::from(
+        "test_id".to_string(),
+        "test_code".to_string(),
+        "test_name".to_string(),
+        "test_password".to_string(),
+    )
+    .unwrap()
+}
+
+pub struct DoctorInChargeRepositoryMockImpl {}
+
+#[async_trait]
+impl DoctorInChargeRepository for DoctorInChargeRepositoryMockImpl {
+    async fn save(&self, user_id: &String, patient_id: &String) -> Result<(), MyError> {
+        Ok(())
+    }
+}

@@ -8,8 +8,8 @@ use ulid::Ulid;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Patient {
     pub id: String,
-    pub code: String,
     // specified by doctor
+    pub code: String,
     pub name: String,
 }
 const NAME_LIMIT: i32 = 30;
@@ -63,12 +63,12 @@ mod tests {
     }
 
     #[test]
-    fn test_train_new_failed() {
+    fn test_patient_new_failed() {
         let test_name = "x".to_string().repeat((NAME_LIMIT + 1) as usize);
         let patient = Patient::new(test_name, None).unwrap_err();
         assert_eq!(
             patient,
-            MyError::BadRequest(json!({"error":"train name must be less than 30 letters"}))
+            MyError::BadRequest(json!({"error":"patient name must be less than 30 letters"}))
         );
     }
 }

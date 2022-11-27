@@ -55,3 +55,30 @@ impl<U: UserRepository, D: DoctorInChargeRepository> UserUsecase<U, D> {
         Ok(user)
     }
 }
+
+#[cfg(test)]
+
+mod tests {
+    use crate::repository::user_repository::{
+        DoctorInChargeRepositoryMockImpl, UserRepositoryMockImpl,
+    };
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_sign_up() {
+        let name = "test_name".to_string();
+        let code = "test_code".to_string();
+        let raw_password = "test_password".to_string();
+        let mock_user_repository = UserRepositoryMockImpl {};
+        let mock_doctor_in_charge_repository = DoctorInChargeRepositoryMockImpl {};
+        let user_usecase = UserUsecase {
+            user_repository: mock_user_repository,
+            doctor_in_charge_repository: mock_doctor_in_charge_repository,
+        };
+        let (user, token) = user_usecase
+            .sign_up(name, Some(code), raw_password)
+            .await
+            .unwrap();
+    }
+}

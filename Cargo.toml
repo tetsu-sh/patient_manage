@@ -23,3 +23,6 @@ sqlx = { version = "0.6", features = [ "runtime-actix-native-tls","mysql","time"
 jsonwebtoken="7"
 bcrypt="0.13"
 
+
+[dev-dependencies]
+tokio={version="~0.2",features=["macros","rt-core"]}

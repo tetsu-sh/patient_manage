@@ -68,3 +68,40 @@ pub trait DoctorInChargeRepository {
     /// store Patient to DB.
     async fn save(&self, user_id: &String, patient_code: &String) -> Result<(), MyError>;
 }
+
+#[cfg(test)]
+
+mod tests {
+
+    use crate::utils::hash::hash_password;
+
+    use super::*;
+    #[test]
+    fn test_user_new() {
+        let test_name = "x".to_string().repeat(30);
+        let test_code = "y".to_string().repeat(30);
+        let test_hashed_password = hash_password("aaaaaaaaa").unwrap();
+        let user = User::new(
+            test_name.clone(),
+            Some(test_code.clone()),
+            test_hashed_password.clone(),
+        )
+        .unwrap();
+        assert_eq!(user.name, test_name);
+        assert_eq!(user.code, test_code);
+        assert_eq!(user.hashed_password, test_hashed_password);
+        user.id;
+    }
+
+    #[test]
+    fn test_user_new_failed() {
+        let test_name = "x".to_string().repeat((NAME_LIMIT + 1) as usize);
+        let test_code = "y".to_string().repeat((NAME_LIMIT) as usize);
+        let test_hashed_password = hash_password("aaaaaaaaa").unwrap();
+        let user = User::new(test_name, Some(test_code), test_hashed_password).unwrap_err();
+        assert_eq!(
+            user,
+            MyError::BadRequest(json!({"error":"train name must be less than 30 letters"}))
+        );
+    }
+}
