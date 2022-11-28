@@ -22,6 +22,7 @@
           --health-timeout 5s
           --health-retries 5
     steps:
+      - uses: actions/checkout@v2
       - name: Show Docker containers
         run: docker ps -a
       - name: Show databases for root user
