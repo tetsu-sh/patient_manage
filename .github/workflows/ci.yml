@@ -22,7 +22,7 @@
           --health-timeout 5s
           --health-retries 5
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: Show Docker containers
         run: docker ps -a
       - name: Show databases for root user
@@ -30,12 +30,11 @@
       - name: Show databases for user1
         run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
       - name: Crate database
-        run: mysql -e 'CREATE DATABASE ${{DB_NAME}};' -u${{ MYSQL_USER }} -p${{ MYSQL_PASSWORD }}
+        run: mysql -e 'CREATE DATABASE ${{env.DB_NAME}};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
       - name: Create env file
-      - shell: bash
         run: |
           touch .env
-          echo "DATABASE_URL=mysql://root:${{MYSQL_ROOT_PASSWORD}}@localhost:3306/${{DB_NAME}}"
+          echo "DATABASE_URL=mysql://root:${{env.MYSQL_ROOT_PASSWORD}}@localhost:3306/${{env.DB_NAME}}"
    build_for_linux_and_operational_test:
      runs-on: ubuntu-20.04
      steps:
@@ -104,4 +103,4 @@
            -a patient-manage-x86-64-apple-darwin.zip \
            -m "Release ${{ steps.extract_tag.outputs.tag }}" ${{ steps.extract_tag.outputs.tag }}
        env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}# Paste your workflow YAML to this code editor
