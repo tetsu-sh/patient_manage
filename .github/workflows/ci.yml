@@ -5,6 +5,10 @@
  jobs:
   build_for_linux_and_operational_test:
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-unkown-linux-musl]
     services:
       db:
         image: mysql:5.7
@@ -37,41 +41,8 @@
         run: |
           touch .env
           echo "DATABASE_URL=mysql://root:${{env.MYSQL_ROOT_PASSWORD}}@localhost:3306/${{env.DB_NAME}}"
-      - uses: rust-build/rust-build.action@1.4.0 
+      - uses: actions/checkout@master
       - name: Build
-        run: 
-      - name: Archive
-        run: |
-          set -eux
-          mkdir patient-manage-x86-64-linux
-          cp target/x86_64-unknown-linux-musl/release/patient-manage patient-manage-x86-64-linux
-          zip -r patient-manage-x86-64-linux.zip patient-manage-x86-64-linux
-          tar czf patient-manage-x86-64-linux.tar.gz patient-manage-x86-64-linux
-      - name: Upload Linux executables as artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ github.sha }}-linux-artifacts
-          path: patient-manage-x86-64-linux.*
-  release_if_tag_exits:
-    needs: [build_for_linux_and_operational_test]
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Extract tag name
-        shell: bash
-        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
-        id: extract_tag
-      - uses: actions/checkout@v2
-      - name: Download the artifact (Linux)
-        uses: actions/download-artifact@v2
-        with:
-          name: ${{ github.sha }}-linux-artifacts
-      - name: Release
-        if: contains(github.ref, 'refs/tags/')
-        run: |
-          set -eux
-          hub release create \
-            -a patient-manage-x86-64-linux.tar.gz \
-            -a patient-manage-x86-64-linux.zip \
-            -m "Release ${{ steps.extract_tag.outputs.tag }}" ${{ steps.extract_tag.outputs.tag }}
+        uses: rust-build/rust-build.action@1.4.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}# Paste your workflow YAML to this code editor
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
