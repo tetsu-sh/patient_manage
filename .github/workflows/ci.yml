@@ -30,7 +30,7 @@
       - name: Show databases for user1
         run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
       - name: Crate database
-        run: mysql --protocol=tcp -e 'CREATE DATABASE ${{env.DB_NAME}};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
+        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password  -e 'CREATE DATABASE ${{env.DB_NAME}};'}
       - name: Create env file
         run: |
           touch .env
@@ -53,51 +53,51 @@
         with:
           name: ${{ github.sha }}-linux-artifacts
           path: patient-manage-x86-64-linux.*
-  build_for_mac:
-    runs-on: macOS-10.15
-    services:
-      db:
-        image: mysql:5.7
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: foo
-          MYSQL_USER: user1
-          MYSQL_PASSWORD: user1_password
-          DB_NAME: medical
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v2
-      - name: Show Docker containers
-        run: docker ps -a
-      - name: Show databases for root user
-        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "SHOW DATABASES"
-      - name: Show databases for user1
-        run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
-      - name: Crate database
-        run: mysql --protocol=tcp -e 'CREATE DATABASE ${{env.DB_NAME}};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
-      - name: Create env file
-        run: |
-          touch .env
-          echo "DATABASE_URL=mysql://root:${{env.MYSQL_ROOT_PASSWORD}}@localhost:3306/${{env.DB_NAME}}"
-      - run: cargo build --release
-      - name: Archive
-        run: |
-          set -eux
-          mkdir patient-manage-x86-64-apple-darwin
-          cp target/release/patient-manage patient-manage-x86-64-apple-darwin
-          zip -r patient-manage-x86-64-apple-darwin.zip patient-manage-x86-64-apple-darwin
-          tar czf patient-manage-x86-64-apple-darwin.tar.gz patient-manage-x86-64-apple-darwin
-      - name: Upload macOS executables as artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ github.sha }}-mac-artifacts
-          path: patient-manage-x86-64-apple-darwin.*
+  # build_for_mac:
+  #   runs-on: macOS-10.15
+  #   services:
+  #     db:
+  #       image: mysql:5.7
+  #       ports:
+  #         - 3306:3306
+  #       env:
+  #         MYSQL_ROOT_PASSWORD: root_password
+  #         MYSQL_DATABASE: foo
+  #         MYSQL_USER: user1
+  #         MYSQL_PASSWORD: user1_password
+  #         DB_NAME: medical
+  #       options: >-
+  #         --health-cmd "mysqladmin ping"
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Show Docker containers
+  #       run: docker ps -a
+  #     - name: Show databases for root user
+  #       run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "SHOW DATABASES"
+  #     - name: Show databases for user1
+  #       run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
+  #     - name: Crate database
+  #       run: mysql --protocol=tcp -e 'CREATE DATABASE ${{env.DB_NAME}};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
+  #     - name: Create env file
+  #       run: |
+  #         touch .env
+  #         echo "DATABASE_URL=mysql://root:${{env.MYSQL_ROOT_PASSWORD}}@localhost:3306/${{env.DB_NAME}}"
+  #     - run: cargo build --release
+  #     - name: Archive
+  #       run: |
+  #         set -eux
+  #         mkdir patient-manage-x86-64-apple-darwin
+  #         cp target/release/patient-manage patient-manage-x86-64-apple-darwin
+  #         zip -r patient-manage-x86-64-apple-darwin.zip patient-manage-x86-64-apple-darwin
+  #         tar czf patient-manage-x86-64-apple-darwin.tar.gz patient-manage-x86-64-apple-darwin
+  #     - name: Upload macOS executables as artifacts
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: ${{ github.sha }}-mac-artifacts
+  #         path: patient-manage-x86-64-apple-darwin.*
   
   release_if_tag_exits:
     needs: [build_for_linux_and_operational_test, build_for_mac]
