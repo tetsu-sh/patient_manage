@@ -25,6 +25,8 @@
       - uses: actions/checkout@v2
       - name: Show Docker containers
         run: docker ps -a
+      - name: test env
+        run: echo $DB_NAME
       - name: Show databases for root user
         run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "SHOW DATABASES"
       - name: Show databases for user1
