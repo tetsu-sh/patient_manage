@@ -30,7 +30,7 @@
       - name: Show databases for user1
         run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
       - name: Crate database
-        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password  -e 'CREATE DATABASE ${{env.DB_NAME}};'}
+        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password  -e "CREATE DATABASE ${{env.DB_NAME}}"
       - name: Create env file
         run: |
           touch .env
@@ -73,16 +73,12 @@
           --health-retries 5
     steps:
       - uses: actions/checkout@v2
-      - uses: docker-practice/actions-setup-docker@master
-      - run: set -x
-      - name: Show Docker containers
-        run: docker ps -a
       - name: Show databases for root user
         run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "SHOW DATABASES"
       - name: Show databases for user1
         run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
       - name: Crate database
-        run: mysql --protocol=tcp -e 'CREATE DATABASE ${{env.DB_NAME}};' -u${{ env.MYSQL_USER }} -p${{ env.MYSQL_PASSWORD }}
+        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "CREATE DATABASE ${{env.DB_NAME}}"
       - name: Create env file
         run: |
           touch .env
