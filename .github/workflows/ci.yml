@@ -42,7 +42,7 @@
      - name: Build
        run: |
          set -eux
-         docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder:1.46.0 sh -c 'sudo chown -R rust:rust . && cargo install sqlx-cli && sqlx migrate run && cargo build --release'
+         docker run --rm -it -v "$(pwd)":/home/rust/src ekidd/rust-musl-builder:1.46.0 sh -c 'sudo chown -R rust:rust . && cargo build --release'
          sudo chown -R $USER:$USER .
      - name: Archive
        run: |
