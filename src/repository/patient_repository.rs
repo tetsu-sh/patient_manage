@@ -3,7 +3,6 @@ use crate::{
     utils::errors::MyError,
 };
 use async_trait::async_trait;
-use log::info;
 use sqlx::MySqlPool;
 
 pub struct PatientRepositoryImpl<'a> {
@@ -13,7 +12,6 @@ pub struct PatientRepositoryImpl<'a> {
 #[async_trait]
 impl PatientRepository for PatientRepositoryImpl<'_> {
     async fn save(&self, patient: &Patient) -> Result<(), MyError> {
-        info!("patient save");
         sqlx::query!(
             "insert into patients(id,code,name)
             values(?,?,?)
@@ -24,7 +22,6 @@ impl PatientRepository for PatientRepositoryImpl<'_> {
         )
         .execute(self.conn)
         .await?;
-
         Ok(())
     }
 
@@ -54,4 +51,44 @@ impl PatientRepository for PatientRepositoryImpl<'_> {
         .collect::<Vec<Patient>>();
         Ok(records)
     }
+}
+
+pub struct PatientRepositoryMockImpl {}
+
+#[async_trait]
+impl PatientRepository for PatientRepositoryMockImpl {
+    /// return Ok
+    async fn save(&self, patient: &Patient) -> Result<(), MyError> {
+        Ok(())
+    }
+
+    /// return Ok
+    async fn fetch_one(&self, id: &String) -> Result<Patient, MyError> {
+        Ok(get_patients()[0].clone())
+    }
+
+    /// return Ok
+    async fn fetch_by_code(&self, code: &String) -> Result<Patient, MyError> {
+        Ok(get_patients()[0].clone())
+    }
+
+    /// return Ok
+    async fn fetch_all(&self) -> Result<Vec<Patient>, MyError> {
+        Ok(get_patients())
+    }
+}
+
+pub fn get_patients() -> Vec<Patient> {
+    vec![
+        Patient::from(
+            "1".to_string(),
+            "a".to_string(),
+            "test_patient_name_1".to_string(),
+        ),
+        Patient::from(
+            "2".to_string(),
+            "b".to_string(),
+            "test_patient_name_2".to_string(),
+        ),
+    ]
 }

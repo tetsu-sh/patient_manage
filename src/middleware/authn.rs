@@ -6,12 +6,12 @@ use serde_json::json;
 
 use crate::utils::errors::MyError;
 
-static SECRETE_KEY: [u8; 4] = *include_bytes!("../../secret.key");
+static SECRETE_KEY: [u8; 16] = *include_bytes!("../../secret.key");
 const TOKEN_EXPIRED_WITHIN: i64 = 60 * 60;
 const AUTORIZATION_HEADER: &str = "autorization";
 const BEARER: &str = "Bearer";
 
-/// return user_id extracting from request header.
+/// extracting user_id from request header.
 pub fn get_user_id_from_header(req: &HttpRequest) -> Result<String, MyError> {
     let authorization = req.headers().get(AUTORIZATION_HEADER);
     let token = validate_and_extract_header(authorization)?;
@@ -31,6 +31,8 @@ fn validate_and_extract_header(authorization: Option<&HeaderValue>) -> Result<&s
     };
 
     let mut splited_token = token.split_whitespace();
+
+    // check Bearer schema
     match splited_token.next() {
         Some(schema) => {
             if schema != BEARER {
@@ -46,6 +48,7 @@ fn validate_and_extract_header(authorization: Option<&HeaderValue>) -> Result<&s
         }
     }
 
+    // check jwt token
     let jwt = match splited_token.next() {
         Some(jwt) => jwt,
         None => {

@@ -1,5 +1,6 @@
 use actix_web::{web, HttpRequest};
 
+use crate::repository::patient_repository::PatientRepositoryImpl;
 use crate::repository::user_repository::{DoctorInChargeRepositoryImpl, UserRepositoryImpl};
 use crate::usecase::user::UserUsecase;
 use crate::utils::errors::MyError;
@@ -19,18 +20,22 @@ pub struct SignUpRequest {
 
 #[derive(Deserialize, Serialize)]
 pub struct SignUpResponse {
+    code: String,
     token: String,
 }
 
 impl SignUpResponse {
-    fn from(token: String) -> Self {
-        Self { token }
+    fn from(user: User, token: String) -> Self {
+        Self {
+            code: user.code,
+            token,
+        }
     }
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct SignInRequest {
-    name: String,
+    code: String,
     password: String,
 }
 
@@ -88,17 +93,19 @@ pub async fn sign_up(
 ) -> ApiResponse {
     let conn = state.get_sqls_db_conn()?;
     let user_repository = UserRepositoryImpl { conn: &conn };
+    let patient_repository = PatientRepositoryImpl { conn: &conn };
     let doctor_in_charge_repository = DoctorInChargeRepositoryImpl { conn: &conn };
 
     let user_usecase = UserUsecase {
         user_repository,
+        patient_repository,
         doctor_in_charge_repository,
     };
 
     let (user, token) = user_usecase
         .sign_up(form.name.clone(), form.code.clone(), form.password.clone())
         .await?;
-    let create_muscle_response = SignUpResponse::from(token);
+    let create_muscle_response = SignUpResponse::from(user, token);
     Ok(HttpResponse::Ok().json(create_muscle_response))
 }
 
@@ -109,14 +116,16 @@ pub async fn sign_in(
 ) -> ApiResponse {
     let conn = state.get_sqls_db_conn()?;
     let user_repository = UserRepositoryImpl { conn: &conn };
+    let patient_repository = PatientRepositoryImpl { conn: &conn };
     let doctor_in_charge_repository = DoctorInChargeRepositoryImpl { conn: &conn };
     let user_usecase = UserUsecase {
         user_repository,
+        patient_repository,
         doctor_in_charge_repository,
     };
 
     let token = user_usecase
-        .sign_in(form.name.clone(), form.password.clone())
+        .sign_in(form.code.clone(), form.password.clone())
         .await?;
     let fetch_user_response = SignInResponse::from(token);
 
@@ -131,9 +140,11 @@ pub async fn assign(
     let conn = state.get_sqls_db_conn()?;
     let user_id = authn::get_user_id_from_header(&req).unwrap();
     let user_repository = UserRepositoryImpl { conn: &conn };
+    let patient_repository = PatientRepositoryImpl { conn: &conn };
     let doctor_in_charge_repository = DoctorInChargeRepositoryImpl { conn: &conn };
     let user_usecase = UserUsecase {
         user_repository,
+        patient_repository,
         doctor_in_charge_repository,
     };
 
@@ -144,23 +155,3 @@ pub async fn assign(
 
     Ok(HttpResponse::Ok().json(assign_response))
 }
-
-// pub async fn fetch_user(
-//     state: web::Data<AppState>,
-//     req: HttpRequest,
-//     params: web::Query<FetchUserParameter>,
-// ) -> ApiResponse {
-//     let conn = state.get_sqls_db_conn()?;
-//     let user_id = authn::get_user_id_from_header(&req).unwrap();
-//     let user_repository = UserRepositoryImpl { conn: &conn };
-//     let doctor_in_charge_repository = DoctorInChargeRepositoryImpl { conn: &conn };
-//     let user_usecase = UserUsecase {
-//         user_repository,
-//         doctor_in_charge_repository,
-//     };
-
-//     let user = user_usecase.fetch(&user_id).await?;
-//     let fetch_user_response = FetchUserResponse::from(user);
-
-//     Ok(HttpResponse::Ok().json(fetch_user_response))
-// }

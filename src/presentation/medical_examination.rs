@@ -108,7 +108,7 @@ pub async fn fetch_medical_examinations(
     };
 
     let medical_examinations = medical_examination_usecase
-        .fetch_by_patient_id(params.patient_code.clone())
+        .fetch_by_patient_code(params.patient_code.clone())
         .await?;
     let fetch_medical_examination_response =
         FetchMedicalExaminationsResponse::from(medical_examinations);

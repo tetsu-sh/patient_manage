@@ -60,7 +60,7 @@ pub trait UserRepository {
     async fn save(&self, user: &User) -> Result<(), MyError>;
     /// find one user from DB by primary key. return user. if not exist,None.
     async fn fetch_one(&self, id: &String) -> Result<User, MyError>;
-    async fn find_by_name(&self, name: &String) -> Result<User, MyError>;
+    async fn find_by_code(&self, code: &String) -> Result<User, MyError>;
 }
 
 #[async_trait]

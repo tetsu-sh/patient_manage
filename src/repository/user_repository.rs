@@ -49,12 +49,12 @@ impl UserRepository for UserRepositoryImpl<'_> {
         }
     }
 
-    async fn find_by_name(&self, name: &String) -> Result<User, MyError> {
+    async fn find_by_code(&self, code: &String) -> Result<User, MyError> {
         let record = sqlx::query!(
             "select id, code, name, password
             from users
-            where users.name=?",
-            name
+            where users.code=?",
+            code
         )
         .fetch_one(self.conn)
         .await?;
@@ -69,13 +69,13 @@ pub struct DoctorInChargeRepositoryImpl<'a> {
 
 #[async_trait]
 impl DoctorInChargeRepository for DoctorInChargeRepositoryImpl<'_> {
-    async fn save(&self, user_id: &String, patient_id: &String) -> Result<(), MyError> {
+    async fn save(&self, user_id: &String, patient_code: &String) -> Result<(), MyError> {
         sqlx::query!(
-            "insert into doctor_in_charges(user_id,patient_id)
+            "insert into doctor_in_charges(user_id,patient_code)
             values(?,?)
             ",
             user_id,
-            patient_id,
+            patient_code,
         )
         .execute(self.conn)
         .await?;
@@ -109,13 +109,13 @@ impl UserRepository for UserRepositoryMockImpl {
 
     /// return User::from("test_id", "test_code", "test_name", "test_password")
     /// name is not correct then return Error
-    async fn find_by_name(&self, name: &String) -> Result<User, MyError> {
+    async fn find_by_code(&self, code: &String) -> Result<User, MyError> {
         let user = get_data();
-        if name == &user.name {
+        if code == &user.code {
             return Ok(user);
         } else {
             return Err(MyError::BadRequest(json!({
-                "error": format!("no record of name={}.", name)
+                "error": format!("no record of code={}.", code)
             })));
         }
     }

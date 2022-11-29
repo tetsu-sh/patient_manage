@@ -80,6 +80,9 @@ impl From<JwtError> for MyError {
             JwtErrorKind::InvalidIssuer => {
                 MyError::Unauthorized(json!({"error":"Issur is invalid"}))
             }
+            JwtErrorKind::ExpiredSignature => {
+                MyError::Unauthorized(json!({"error":"Token has expired please reflesh by login"}))
+            }
             _ => MyError::Unauthorized(json!({
                 "error": format!("problem except token and issue {}", err.to_string())
             })),

@@ -1,4 +1,5 @@
 use actix_web::{web, HttpRequest};
+use chrono::{DateTime, Local};
 
 use crate::domain::patient::Patient;
 use crate::repository::medical_examination_repository::MedicalExaminationRepositoryImpl;
@@ -23,6 +24,25 @@ pub struct CreatePatientResponse {
 }
 
 impl From<Patient> for CreatePatientResponse {
+    fn from(patient: Patient) -> Self {
+        Self { code: patient.code }
+    }
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct CreatePatientWithMedicalExaminationRequest {
+    name: String,
+    code: Option<String>,
+    interviewed_at: Option<DateTime<Local>>,
+    symptom: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct CreatePatientWithMedicalExaminationResponse {
+    code: String,
+}
+
+impl From<Patient> for CreatePatientWithMedicalExaminationResponse {
     fn from(patient: Patient) -> Self {
         Self { code: patient.code }
     }
@@ -82,10 +102,38 @@ pub async fn create_patient(
         patient_repository,
         medical_examination_repository,
     };
+
     let patient = patient_usecase
         .create_patient(form.name.clone(), form.code.clone())
         .await?;
     let create_patient_response = CreatePatientResponse::from(patient);
+    Ok(HttpResponse::Ok().json(create_patient_response))
+}
+
+pub async fn create_patient_with_medical_examination(
+    state: web::Data<AppState>,
+    req: HttpRequest,
+    form: web::Json<CreatePatientWithMedicalExaminationRequest>,
+) -> ApiResponse {
+    let conn = state.get_sqls_db_conn()?;
+    let user_id = middleware::authn::get_user_id_from_header(&req)?;
+    let patient_repository = PatientRepositoryImpl { conn: &conn };
+    let medical_examination_repository = MedicalExaminationRepositoryImpl { conn: &conn };
+    let patient_usecase = PatientUsecase {
+        patient_repository,
+        medical_examination_repository,
+    };
+
+    let patient = patient_usecase
+        .create_patient_with_medical_examination(
+            form.name.clone(),
+            form.code.clone(),
+            form.interviewed_at,
+            user_id,
+            form.symptom.clone(),
+        )
+        .await?;
+    let create_patient_response = CreatePatientWithMedicalExaminationResponse::from(patient);
     Ok(HttpResponse::Ok().json(create_patient_response))
 }
 
@@ -94,14 +142,13 @@ pub async fn fetch_patient(
     req: HttpRequest,
     params: web::Query<FetchPatientParameter>,
 ) -> ApiResponse {
-    let conn = state.get_sqls_db_conn()?;
+    let mut conn = state.get_sqls_db_conn()?;
     let _ = middleware::authn::get_user_id_from_header(&req)?;
     let patient_repository = PatientRepositoryImpl { conn: &conn };
     let medical_examination_repository = MedicalExaminationRepositoryImpl { conn: &conn };
     let patient_usecase = PatientUsecase::new(patient_repository, medical_examination_repository);
     let patient = patient_usecase.fetch_one(&params.id).await?;
     let res = FetchPatientResponse::from(patient);
-
     Ok(HttpResponse::Ok().json(res))
 }
 
@@ -120,6 +167,5 @@ pub async fn fetch_patients(
     };
     let patients = train_usecase.fetch_patients().await?;
     let res = FetchPatientsResponse::from(patients);
-
     Ok(HttpResponse::Ok().json(res))
 }

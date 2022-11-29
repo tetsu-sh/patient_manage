@@ -16,11 +16,11 @@ CREATE TABLE patients (
 
 CREATE TABLE doctor_in_charges(
     user_id VARCHAR(100) NOT NULL,
-    patient_id VARCHAR(100) NOT NULL,
+    patient_code VARCHAR(100) NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(user_id,patient_id),
+    PRIMARY KEY(user_id,patient_code),
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (patient_id) REFERENCES patients(id)
+    FOREIGN KEY (patient_code) REFERENCES patients(code)
 );
 
 CREATE TABLE medical_examinations(
@@ -30,6 +30,6 @@ CREATE TABLE medical_examinations(
     interviewed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     symptom VARCHAR(100) NOT NULL,
-    FOREIGN KEY (patient_id) REFERENCES patients(id),
+    FOREIGN KEY (patient_code) REFERENCES patients(code),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );

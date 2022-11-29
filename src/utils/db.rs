@@ -1,6 +1,6 @@
 use crate::constants::env_key;
 use dotenv::dotenv;
-use sqlx::MySqlPool;
+use sqlx::{mysql::MySqlConnectOptions, MySqlConnection, MySqlPool};
 use std::env;
 
 /// pre: set DATABASE env

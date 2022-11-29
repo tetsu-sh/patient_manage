@@ -1,4 +1,3 @@
-use super::medical_examination::MedicalExamination;
 use crate::utils::errors::MyError;
 use async_trait::async_trait;
 use serde_json::json;
@@ -8,7 +7,6 @@ use ulid::Ulid;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Patient {
     pub id: String,
-    // specified by doctor
     pub code: String,
     pub name: String,
 }
@@ -40,7 +38,6 @@ pub trait PatientRepository {
     async fn save(&self, patient: &Patient) -> Result<(), MyError>;
     /// find one Patient from DB by primary key. return Patient. if not exist,None.
     async fn fetch_one(&self, id: &String) -> Result<Patient, MyError>;
-
     async fn fetch_by_code(&self, code: &String) -> Result<Patient, MyError>;
     async fn fetch_all(&self) -> Result<Vec<Patient>, MyError>;
 }

@@ -1,7 +1,9 @@
 use crate::domain::medical_examination::{MedicalExamination, MedicalExaminationRepository};
+use crate::utils::datetime::{self, DATETIME_FMT};
 use crate::utils::errors::MyError;
 
 use chrono::{Local, TimeZone};
+use log::info;
 use serde_json::json;
 
 use async_trait::async_trait;
@@ -30,7 +32,7 @@ impl MedicalExaminationRepository for MedicalExaminationRepositoryImpl<'_> {
             medical_examination
                 .interviewed_at
                 .unwrap()
-                .format("%Y/%m/%d %H:%M:%S")
+                .format(DATETIME_FMT)
                 .to_string(),
             medical_examination.symptom,
         )
@@ -39,29 +41,27 @@ impl MedicalExaminationRepository for MedicalExaminationRepositoryImpl<'_> {
         Ok(())
     }
 
-    async fn fetch_by_patient_id(
+    async fn fetch_by_patient_code(
         &self,
         patient_code: &String,
     ) -> Result<Vec<MedicalExamination>, MyError> {
-        struct MedicalExaminationQuery {
-            id: String,
-            symptom: String,
-            interviewed_at: String,
-        }
         let records = sqlx::query!(
-            "select id,symptom,interviewed_at from medical_examinations where patient_code=?",
+            "select id,symptom,interviewed_at,created_at from medical_examinations where patient_code=?",
             patient_code
         )
         .fetch_all(self.conn)
         .await?;
         let mut medical_examinations = vec![];
         for record in records {
+            info!("{:?}", record.interviewed_at);
+            info!("{:?}", record.interviewed_at.to_string());
+            info!("{:?}", record.created_at);
             medical_examinations.push(MedicalExamination::from(
                 record.id,
                 record.symptom,
                 Some(
                     Local
-                        .datetime_from_str(&record.interviewed_at.to_string(), "%Y/%m/%d %H:%M:%S")
+                        .datetime_from_str(&record.interviewed_at.to_string(), DATETIME_FMT)
                         .unwrap(),
                 ),
             )?)
@@ -86,7 +86,7 @@ impl MedicalExaminationRepository for MedicalExaminationRepositoryImpl<'_> {
                 record.symptom,
                 Some(
                     Local
-                        .datetime_from_str(&record.interviewed_at.to_string(), "%Y/%m/%d %H:%M:%S")
+                        .datetime_from_str(&record.interviewed_at.to_string(), DATETIME_FMT)
                         .unwrap(),
                 ),
             )?;
@@ -97,4 +97,60 @@ impl MedicalExaminationRepository for MedicalExaminationRepositoryImpl<'_> {
             })));
         }
     }
+}
+
+pub struct MedicalExaminationRepositoryMockImpl {}
+
+#[async_trait]
+impl MedicalExaminationRepository for MedicalExaminationRepositoryMockImpl {
+    async fn save(
+        &self,
+        user_id: &String,
+        patient_code: &String,
+        medical_examination: &MedicalExamination,
+    ) -> Result<(), MyError> {
+        Ok(())
+    }
+
+    async fn fetch_by_patient_code(
+        &self,
+        patient_code: &String,
+    ) -> Result<Vec<MedicalExamination>, MyError> {
+        struct MedicalExaminationQuery {
+            id: String,
+            symptom: String,
+            interviewed_at: String,
+        }
+        Ok(get_medical_examinations())
+    }
+
+    async fn fetch_one(&self, id: &String) -> Result<MedicalExamination, MyError> {
+        Ok(get_medical_examinations()[0].clone())
+    }
+}
+
+/// test data
+pub fn get_medical_examinations() -> Vec<MedicalExamination> {
+    vec![
+        MedicalExamination::from(
+            "1".to_string(),
+            "headache".to_string(),
+            Some(
+                Local
+                    .datetime_from_str("2022-12-12 12:12:12", DATETIME_FMT)
+                    .unwrap(),
+            ),
+        )
+        .unwrap(),
+        MedicalExamination::from(
+            "2".to_string(),
+            "feaver".to_string(),
+            Some(
+                Local
+                    .datetime_from_str("2022-12-12 12:12:12", DATETIME_FMT)
+                    .unwrap(),
+            ),
+        )
+        .unwrap(),
+    ]
 }
