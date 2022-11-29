@@ -1,48 +1,48 @@
- name: CI
+#  name: CI
  
- on: [push, pull_request]
+#  on: [push, pull_request]
  
- jobs:
-  build_for_linux_and_operational_test:
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [x86_64-unkown-linux-musl]
-    services:
-      db:
-        image: mysql:5.7
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: foo
-          MYSQL_USER: user1
-          MYSQL_PASSWORD: user1_password
-          DB_NAME: medical
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v2
-      - name: Show Docker containers
-        run: docker ps -a
-      - name: test env
-        run: echo $DB_NAME
-      - name: Show databases for root user
-        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "SHOW DATABASES"
-      - name: Show databases for user1
-        run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
-      - name: Crate database
-        run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password  -e "CREATE DATABASE ${{env.DB_NAME}}"
-      - name: Create env file
-        run: |
-          touch .env
-          echo "DATABASE_URL=mysql://root:${{env.MYSQL_ROOT_PASSWORD}}@localhost:3306/${{env.DB_NAME}}"
-      - uses: actions/checkout@master
-      - name: Build
-        uses: rust-build/rust-build.action@1.4.0
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+#  jobs:
+#   build_for_linux_and_operational_test:
+#     runs-on: ubuntu-20.04
+#     strategy:
+#       fail-fast: false
+#       matrix:
+#         target: [x86_64-unkown-linux-musl]
+#     services:
+#       db:
+#         image: mysql:5.7
+#         ports:
+#           - 3306:3306
+#         env:
+#           MYSQL_ROOT_PASSWORD: root_password
+#           MYSQL_DATABASE: foo
+#           MYSQL_USER: user1
+#           MYSQL_PASSWORD: user1_password
+#           DB_NAME: medical
+#         options: >-
+#           --health-cmd "mysqladmin ping"
+#           --health-interval 10s
+#           --health-timeout 5s
+#           --health-retries 5
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Show Docker containers
+#         run: docker ps -a
+#       - name: test env
+#         run: echo $DB_NAME
+#       - name: Show databases for root user
+#         run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password -e "SHOW DATABASES"
+#       - name: Show databases for user1
+#         run: mysql --protocol=tcp -h localhost -P 3306 -u user1 -puser1_password -e "SHOW DATABASES"
+#       - name: Crate database
+#         run: mysql --protocol=tcp -h localhost -P 3306 -u root -proot_password  -e "CREATE DATABASE ${{env.DB_NAME}}"
+#       - name: Create env file
+#         run: |
+#           touch .env
+#           echo "DATABASE_URL=mysql://root:${{env.MYSQL_ROOT_PASSWORD}}@localhost:3306/${{env.DB_NAME}}"
+#       - uses: actions/checkout@master
+#       - name: Build
+#         uses: rust-build/rust-build.action@1.4.0
+#         env:
+#           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
