@@ -54,11 +54,6 @@ impl<U: UserRepository, P: PatientRepository, D: DoctorInChargeRepository> UserU
             .await?;
         Ok(())
     }
-
-    pub async fn fetch(&self, id: &String) -> Result<User, MyError> {
-        let user = self.user_repository.fetch_one(id).await?;
-        Ok(user)
-    }
 }
 
 #[cfg(test)]

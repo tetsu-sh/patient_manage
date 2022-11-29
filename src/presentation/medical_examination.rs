@@ -59,9 +59,9 @@ impl FetchMedicalExaminationsResponse {
             .into_iter()
             .map(|medical_examination| FetchMedicalExamination::from(medical_examination))
             .collect::<Vec<FetchMedicalExamination>>();
-        return Self {
+        Self {
             medical_examinations,
-        };
+        }
     }
 }
 
@@ -80,7 +80,7 @@ pub async fn create_medical_examination(
         patient_repository,
     };
 
-    let _ = medical_examination_usecase
+    medical_examination_usecase
         .create_medical_examination(
             form.interviewed_at.clone(),
             user_id.clone(),

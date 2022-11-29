@@ -29,17 +29,11 @@ impl<M: MedicalExaminationRepository, P: PatientRepository> MedicalExaminationUs
         symptom: String,
     ) -> Result<(), MyError> {
         let medical_examination = MedicalExamination::new(symptom, interviewed_at);
-        let _ = self.patient_repository.fetch_by_code(&patient_code).await?;
-        let _ = self
-            .medical_examination_repository
+        self.patient_repository.fetch_by_code(&patient_code).await?;
+        self.medical_examination_repository
             .save(&user_id, &patient_code, &medical_examination)
             .await?;
         Ok(())
-    }
-
-    pub async fn fetch_one(&self, id: &String) -> Result<MedicalExamination, MyError> {
-        let medical_examination = self.medical_examination_repository.fetch_one(id).await?;
-        Ok(medical_examination)
     }
 
     pub async fn fetch_by_patient_code(
@@ -63,7 +57,7 @@ mod tests {
             medical_examination_repository::{
                 get_medical_examinations, MedicalExaminationRepositoryMockImpl,
             },
-            patient_repository::{get_patients, PatientRepositoryMockImpl},
+            patient_repository::PatientRepositoryMockImpl,
         },
         utils::datetime::DATETIME_FMT,
     };

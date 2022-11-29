@@ -1,6 +1,6 @@
 use crate::constants::env_key;
 use dotenv::dotenv;
-use sqlx::{mysql::MySqlConnectOptions, MySqlConnection, MySqlPool};
+use sqlx::MySqlPool;
 use std::env;
 
 /// pre: set DATABASE env
@@ -8,8 +8,7 @@ use std::env;
 pub async fn establish_sqlx_connection() -> MySqlPool {
     dotenv().ok();
     let database_url = env::var(env_key::DATABASE_URL).expect("DATABASE_URL must be set");
-    let pool = MySqlPool::connect(&database_url)
+    MySqlPool::connect(&database_url)
         .await
-        .expect("db connection error");
-    pool
+        .expect("db connection error")
 }

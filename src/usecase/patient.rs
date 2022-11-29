@@ -1,8 +1,4 @@
-use std::future::Future;
-
-use actix_web::web::block;
 use chrono::{DateTime, Local};
-use log::info;
 
 use crate::{
     domain::medical_examination::MedicalExaminationRepository,
@@ -84,7 +80,6 @@ mod tests {
     async fn test_create_patient() {
         let name = "test_name".to_string();
         let code = "test_code".to_string();
-        let raw_password = "test_password".to_string();
         let mock_patient_repository = PatientRepositoryMockImpl {};
         let mock_medical_examination_repository = MedicalExaminationRepositoryMockImpl {};
         let patient_usecase = PatientUsecase {

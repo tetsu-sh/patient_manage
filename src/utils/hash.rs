@@ -1,4 +1,3 @@
-use crate::utils::errors::MyError;
 pub use bcrypt::verify;
 use bcrypt::{hash, DEFAULT_COST};
 
